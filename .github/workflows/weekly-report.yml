@@ -1,0 +1,33 @@
+name: Weekly Report to Feishu
+
+on:
+  schedule:
+    # 北京时间每周日 21:00 == UTC 周日 13:00
+    - cron: "0 13 * * 0"
+  # 支持手动触发，方便调试
+  workflow_dispatch:
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirement.txt
+
+      - name: Send weekly report
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          # 可选：当 Notion 属性名与默认值不同时覆盖
+          NOTION_PROP_SUMMARY: ${{ vars.NOTION_PROP_SUMMARY }}
+          NOTION_PROP_NEXT_TASK: ${{ vars.NOTION_PROP_NEXT_TASK }}
+        run: python main.py
